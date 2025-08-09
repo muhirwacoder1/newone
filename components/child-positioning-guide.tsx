@@ -38,15 +38,23 @@ const ChildPositioningGuide = () => {
   );
 
   const VideoLink = ({ url, title }) => (
-    <a 
-      href={url} 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors mr-2 mb-2"
-    >
-      <Play className="w-4 h-4 mr-2" />
-      {title || "Watch Video"}
-    </a>
+    <div className="group relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+      <a 
+        href={url} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="relative inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-2xl shadow-lg hover:shadow-red-500/25 transition-all duration-300 mr-3 mb-3 group-hover:scale-105"
+      >
+        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+          <Play className="w-4 h-4 text-white fill-current" />
+        </div>
+        <div className="flex flex-col items-start">
+          <span className="text-sm font-semibold">{title || "Watch Video"}</span>
+          <span className="text-xs text-red-100">Click to watch</span>
+        </div>
+      </a>
+    </div>
   );
 
   const SectionHeader = ({ title, isActive, onClick }) => (
@@ -59,8 +67,8 @@ const ChildPositioningGuide = () => {
     </button>
   );
 
-  return (
-    <div className="max-w-4xl mx-auto p-6 bg-white">
+  return (    <
+div className="max-w-4xl mx-auto p-6 bg-white">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4">How to Position Child</h1>
         <p className="text-lg text-gray-600">Comprehensive guide for child positioning and therapy exercises</p>
@@ -179,15 +187,20 @@ const ChildPositioningGuide = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <VideoLink url="https://youtu.be/p1QcRimMPRo?si=tcyGLVuW3SaXYk74" title="Head Control Video 1" />
-              <VideoLink url="https://youtu.be/X7GXEcgCy3Q?si=DGyRkfKL6jOXNfU4" title="Head Control Video 2" />
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                <Play className="w-5 h-5 mr-2 text-red-500" />
+                Video Guides
+              </h4>
+              <div className="flex flex-wrap gap-3">
+                <VideoLink url="https://youtu.be/p1QcRimMPRo?si=tcyGLVuW3SaXYk74" title="Head Control Guide 1" />
+                <VideoLink url="https://youtu.be/X7GXEcgCy3Q?si=DGyRkfKL6jOXNfU4" title="Head Control Guide 2" />
+              </div>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Section 2: Rolling */}
+      </div>     
+ {/* Section 2: Rolling */}
       <div className="border border-gray-200 rounded-lg mb-4">
         <SectionHeader 
           title="2. Rolling" 
@@ -231,8 +244,14 @@ const ChildPositioningGuide = () => {
               </ul>
             </SafetyBox>
 
-            <div className="flex flex-wrap gap-2">
-              <VideoLink url="https://youtu.be/0oqQo-W43rA?si=YOO-qOLi_KKwyR9c" title="Rolling Video" />
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                <Play className="w-5 h-5 mr-2 text-red-500" />
+                Video Guides
+              </h4>
+              <div className="flex flex-wrap gap-3">
+                <VideoLink url="https://youtu.be/0oqQo-W43rA?si=YOO-qOLi_KKwyR9c" title="Rolling Guide" />
+              </div>
             </div>
           </div>
         )}
@@ -322,9 +341,8 @@ const ChildPositioningGuide = () => {
                   </ul>
                 </div>
               </div>
-            </div>
-
-            <div className="mb-6">
+            </div>    
+        <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">Exercises in Sitting Position:</h3>
               <div className="space-y-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
@@ -399,15 +417,20 @@ const ChildPositioningGuide = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <VideoLink url="https://youtu.be/VQ_LtY0H0rc?si=dYd-q45iYjN4wI6F" title="Sitting Video 1" />
-              <VideoLink url="https://youtu.be/TZK6aFUm9DY?si=gcokRpVn7fOVQZ1x" title="Sitting Video 2" />
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                <Play className="w-5 h-5 mr-2 text-red-500" />
+                Video Guides
+              </h4>
+              <div className="flex flex-wrap gap-3">
+                <VideoLink url="https://youtu.be/VQ_LtY0H0rc?si=dYd-q45iYjN4wI6F" title="Sitting Guide 1" />
+                <VideoLink url="https://youtu.be/TZK6aFUm9DY?si=gcokRpVn7fOVQZ1x" title="Sitting Guide 2" />
+              </div>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Section 4: Crawling */}
+      </div>    
+  {/* Section 4: Crawling */}
       <div className="border border-gray-200 rounded-lg mb-4">
         <SectionHeader 
           title="4. Crawling" 
@@ -451,9 +474,15 @@ const ChildPositioningGuide = () => {
               </ul>
             </SafetyBox>
 
-            <div className="flex flex-wrap gap-2">
-              <VideoLink url="https://youtu.be/mTQnr39Kyq4?si=1L3RYPPCbYDiD3-o" title="Crawling Video 1" />
-              <VideoLink url="https://youtu.be/RWCjJs6JAMk?si=jqtal8h4kqhtNE3Q" title="Crawling Video 2" />
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                <Play className="w-5 h-5 mr-2 text-red-500" />
+                Video Guides
+              </h4>
+              <div className="flex flex-wrap gap-3">
+                <VideoLink url="https://youtu.be/mTQnr39Kyq4?si=1L3RYPPCbYDiD3-o" title="Crawling Guide 1" />
+                <VideoLink url="https://youtu.be/RWCjJs6JAMk?si=jqtal8h4kqhtNE3Q" title="Crawling Guide 2" />
+              </div>
             </div>
           </div>
         )}
@@ -503,16 +532,21 @@ const ChildPositioningGuide = () => {
               </ul>
             </SafetyBox>
 
-            <div className="flex flex-wrap gap-2">
-              <VideoLink url="https://youtu.be/6b0CTqsooBc?si=pKvUkDgjelt5KqBD" title="Standing Video 1" />
-              <VideoLink url="https://youtu.be/4U9gvOSDHJY?si=1lEKqdaTcxCJI7yI" title="Standing Video 2" />
-              <VideoLink url="https://youtube.com/shorts/sOdBDY-VEcM?si=0B740huyZk8U7vnz" title="Standing Short Video" />
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                <Play className="w-5 h-5 mr-2 text-red-500" />
+                Video Guides
+              </h4>
+              <div className="flex flex-wrap gap-3">
+                <VideoLink url="https://youtu.be/6b0CTqsooBc?si=pKvUkDgjelt5KqBD" title="Standing Guide 1" />
+                <VideoLink url="https://youtu.be/4U9gvOSDHJY?si=1lEKqdaTcxCJI7yI" title="Standing Guide 2" />
+                <VideoLink url="https://youtube.com/shorts/sOdBDY-VEcM?si=0B740huyZk8U7vnz" title="Standing Short Guide" />
+              </div>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Section 6: Walking */}
+      </div>      {/* 
+Section 6: Walking */}
       <div className="border border-gray-200 rounded-lg mb-4">
         <SectionHeader 
           title="6. Walking" 

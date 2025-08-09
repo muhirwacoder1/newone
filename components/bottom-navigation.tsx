@@ -29,7 +29,7 @@ export function BottomNavigation({ role, activeTab = "home", onTabChange }: Bott
       case "patient":
         return [
           { icon: Home, label: "Home", value: "home" },
-          { icon: Play, label: "Exercises", value: "exercises" },
+          { icon: FileText, label: "Guide", value: "guide" },
           { icon: Calendar, label: "Schedule", value: "appointments" },
           { icon: Users, label: "Community", value: "community" },
           { icon: MessageSquare, label: "Q&A", value: "questions" }

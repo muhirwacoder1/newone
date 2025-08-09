@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Calendar, Users, BarChart3, FileText, Clock, CheckCircle, AlertCircle, Plus, Search, Filter, Bell, Settings, LogOut, Heart, Stethoscope, Activity, TrendingUp, MessageSquare, Video, Download, Zap, Star, Award, ArrowRight, Play, Phone, MapPin, UserPlus, Edit, Eye } from 'lucide-react'
+import { Calendar, Users, BarChart3, FileText, Clock, CheckCircle, AlertCircle, Plus, Search, Filter, Bell, Settings, LogOut, Heart, Stethoscope, Activity, TrendingUp, MessageSquare, Video, Download, Zap, Star, Award, ArrowRight, Play, Phone, MapPin, UserPlus, Edit, Eye, ExternalLink } from 'lucide-react'
+import { toast } from "sonner"
 
 import { SmartAssessmentForm } from "@/components/form"
 
@@ -23,29 +24,200 @@ export function PhysiotherapistDashboard() {
   const [selectedPatient, setSelectedPatient] = useState<any>(null)
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
-  const [meetingLink, setMeetingLink] = useState("")
+  const [meetingLink, setMeetingLink] = useState("https://meet.google.com/tcq-qjjr-ave")
   const [denialReason, setDenialReason] = useState("")
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false)
   const [selectedReport, setSelectedReport] = useState<any>(null)
   const [feedback, setFeedback] = useState("")
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showDetailedView, setShowDetailedView] = useState(false)
+  const [showReportView, setShowReportView] = useState(false)
+  const [selectedReportForView, setSelectedReportForView] = useState<any>(null)
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false)
+  const [doctorName, setDoctorName] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('doctor_name') || 'Dr. Sarah Mitchell'
+    }
+    return 'Dr. Sarah Mitchell'
+  })
+  const [doctorAvatar, setDoctorAvatar] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('doctor_avatar') || ''
+    }
+    return ''
+  })
+
+  // Interactive handlers
+  const handleApproveAppointment = (appointment: any) => {
+    setSelectedAppointment(appointment)
+    setShowAppointmentDialog(true)
+    toast.success(`Opening appointment approval for ${appointment.patient}`)
+  }
+
+  const handleDenyAppointment = (appointment: any) => {
+    setSelectedAppointment(appointment)
+    setDenialReason("")
+    setShowAppointmentDialog(true)
+    toast.info(`Opening denial form for ${appointment.patient}`)
+  }
+
+  const confirmAppointment = () => {
+    if (selectedAppointment) {
+      toast.success(`✅ Appointment approved for ${selectedAppointment.patient}! Meeting link sent.`)
+      // Update appointment status
+      setSelectedAppointment(null)
+      setShowAppointmentDialog(false)
+      // Open meeting link
+      window.open(meetingLink, '_blank')
+    }
+  }
+
+  const denyAppointment = () => {
+    if (selectedAppointment && denialReason.trim()) {
+      toast.error(`❌ Appointment denied for ${selectedAppointment.patient}. Reason sent to patient.`)
+      setSelectedAppointment(null)
+      setShowAppointmentDialog(false)
+      setDenialReason("")
+    } else {
+      toast.error("Please provide a reason for denial")
+    }
+  }
+
+  const handleReviewReport = (report: any) => {
+    setSelectedReport(report)
+    setShowFeedbackDialog(true)
+    toast.info(`Opening report from ${report.chw} for ${report.patient}`)
+  }
+
+  const submitFeedback = () => {
+    if (selectedReport && feedback.trim()) {
+      toast.success(`✅ Feedback sent to ${selectedReport.chw} regarding ${selectedReport.patient}`)
+      setSelectedReport(null)
+      setShowFeedbackDialog(false)
+      setFeedback("")
+    } else {
+      toast.error("Please provide feedback before submitting")
+    }
+  }
+
+  const handleAssignPatient = (patient: any) => {
+    setSelectedPatient(patient)
+    setShowAssignDialog(true)
+    toast.info(`Opening CHW assignment for ${patient.name}`)
+  }
+
+  const assignToCHW = (chwName: string) => {
+    if (selectedPatient) {
+      toast.success(`✅ ${selectedPatient.name} assigned to ${chwName}`)
+      setSelectedPatient(null)
+      setShowAssignDialog(false)
+    }
+  }
+
+  const markNotificationAsRead = (notificationId: number) => {
+    setNotifications(prev => 
+      prev.map(notif => 
+        notif.id === notificationId ? { ...notif, read: true } : notif
+      )
+    )
+    toast.success("Notification marked as read")
+  }
+
+  const openMeetingLink = (link: string, patientName: string) => {
+    if (link) {
+      window.open(link, '_blank')
+      toast.success(`🎥 Opening video call with ${patientName}`)
+    } else {
+      toast.error("No meeting link available")
+    }
+  }
+
+  const handleStatCardClick = (statType: string, value: number) => {
+    switch(statType) {
+      case 'patients':
+        setActiveTab('patients')
+        toast.success(`📊 Showing all ${value} patients`)
+        break
+      case 'appointments':
+        setActiveTab('appointments')
+        toast.success(`📅 Showing ${value} pending appointments`)
+        break
+      case 'reports':
+        setActiveTab('reports')
+        toast.success(`📝 Showing ${value} CHW reports`)
+        break
+      case 'assessments':
+        setShowAssessmentForm(true)
+        toast.success(`📋 Opening assessment forms (${value} completed this month)`)
+        break
+      case 'chw':
+        toast.success(`👥 Showing ${value} active CHW partners and their performance`)
+        break
+      default:
+        toast.info(`📈 ${statType}: ${value}`)
+    }
+  }
+
+  const handleQuickAction = (action: string) => {
+    switch(action) {
+      case 'newAssessment':
+        setShowAssessmentForm(true)
+        toast.success("📋 Opening new patient assessment form")
+        break
+      case 'scheduleAppointment':
+        toast.success("📅 Opening appointment scheduler")
+        break
+      case 'reviewReports':
+        setActiveTab('reports')
+        toast.success("📝 Switching to CHW reports review")
+        break
+      case 'patientProgress':
+        setActiveTab('patients')
+        toast.success("📊 Viewing patient progress dashboard")
+        break
+      default:
+        toast.info(`⚡ Quick action: ${action}`)
+    }
+  }
+
+  const handleViewDetails = () => {
+    setShowDetailedView(true)
+    toast.success("📊 Opening detailed patient analytics dashboard")
+  }
+
+  const handleViewReport = (report: any) => {
+    setSelectedReportForView(report)
+    setShowReportView(true)
+    toast.success(`📄 Opening detailed report from ${report.chw}`)
+  }
+
+  const handleUpdateProfile = (newName: string, newAvatar: string) => {
+    setDoctorName(newName)
+    setDoctorAvatar(newAvatar)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('doctor_name', newName)
+      localStorage.setItem('doctor_avatar', newAvatar)
+    }
+    toast.success("✅ Profile updated successfully!")
+    setShowSettingsDialog(false)
+  }
   const [notifications, setNotifications] = useState([
     {
       id: 1,
       type: "appointment",
       title: "New Appointment Request",
-      message: "Emma Johnson requested an appointment for tomorrow at 10:00 AM",
+      message: "Uwimana Claudine requested an appointment for tomorrow at 10:00 AM",
       time: "5 minutes ago",
       read: false,
       priority: "high",
-      patient: "Emma Johnson",
+      patient: "Uwimana Claudine",
       avatar: "/whimsical-child.png"
     },
     {
       id: 2,
       type: "report",
       title: "New CHW Report",
-      message: "Uwimana Marie Claire submitted a progress report for Michael Chen",
+      message: "Mukamana Marie Claire submitted a progress report for Nkurunziza Jean",
       time: "15 minutes ago",
       read: false,
       priority: "medium",
@@ -92,60 +264,33 @@ export function PhysiotherapistDashboard() {
   const upcomingAppointments = [
     {
       id: 1,
-      patient: "Emma Johnson",
-      time: "9:00 AM",
-      date: "Today",
-      type: "Initial Assessment",
-      status: "confirmed",
-      avatar: "/whimsical-child.png",
-      priority: "high",
-      duration: "45 min",
-      meetingLink: "https://meet.google.com/abc-defg-hij"
-    },
-    {
-      id: 2,
-      patient: "Michael Chen",
+      patient: "Nkurunziza Jean Baptiste",
       time: "10:30 AM",
       date: "Today",
       type: "Follow-up",
       status: "pending",
       avatar: "/young-boy-drawing.png",
       priority: "medium",
-      duration: "30 min",
       meetingLink: ""
     },
     {
-      id: 3,
-      patient: "Sofia Rodriguez",
-      time: "2:00 PM",
-      date: "Tomorrow",
-      type: "Progress Review",
-      status: "pending",
-      avatar: "/young-woman-smiling.png",
-      priority: "low",
-      duration: "60 min",
-      meetingLink: ""
-    },
-    {
-      id: 4,
-      patient: "David Uwimana",
-      time: "11:00 AM",
-      date: "Friday",
-      type: "Therapy Session",
-      status: "denied",
-      avatar: "/placeholder.svg",
-      priority: "medium",
-      duration: "40 min",
-      denialReason: "Patient needs to complete pre-assessment forms first",
-      meetingLink: ""
+      id: 2,
+      patient: "Uwimana Claudine",
+      time: "9:00 AM",
+      date: "Today",
+      type: "Initial Assessment",
+      status: "confirmed",
+      avatar: "/whimsical-child.png",
+      priority: "high",
+      meetingLink: "https://meet.google.com/tcq-qjjr-ave"
     }
   ]
 
   const allCHWReports = [
     {
       id: 1,
-      patient: "Emma Johnson",
-      chw: "Uwimana Marie Claire",
+      patient: "Uwimana Claudine",
+      chw: "Mukamana Marie Claire",
       date: "2 hours ago",
       status: "improvement",
       summary: "Significant progress in motor skills development. Patient can now walk 10 steps independently.",
@@ -158,8 +303,8 @@ export function PhysiotherapistDashboard() {
     },
     {
       id: 2,
-      patient: "Michael Chen",
-      chw: "Nkurunziza Jean Baptiste",
+      patient: "Nkurunziza Jean Baptiste",
+      chw: "Habimana Emmanuel",
       date: "1 day ago",
       status: "concern",
       summary: "Device adjustment needed for better mobility. Wheelchair needs maintenance.",
@@ -234,51 +379,25 @@ export function PhysiotherapistDashboard() {
   const patients = [
     {
       id: 1,
-      name: "Emma Johnson",
+      name: "Uwimana Claudine",
       age: "7 years",
       condition: "Spastic CP",
       gmfcsLevel: "II",
-      assignedCHW: "Uwimana Marie Claire",
+      assignedCHW: "Mukamana Marie Claire",
       status: "active",
       lastVisit: "2 days ago",
-      progress: 85,
       avatar: "/whimsical-child.png"
     },
     {
       id: 2,
-      name: "Michael Chen",
+      name: "Nkurunziza Jean Baptiste",
       age: "5 years",
       condition: "Ataxic CP",
       gmfcsLevel: "III",
-      assignedCHW: "Nkurunziza Jean Baptiste",
+      assignedCHW: "Habimana Emmanuel",
       status: "active",
       lastVisit: "1 week ago",
-      progress: 72,
       avatar: "/young-boy-drawing.png"
-    },
-    {
-      id: 3,
-      name: "Sofia Rodriguez",
-      age: "9 years",
-      condition: "Mixed CP",
-      gmfcsLevel: "I",
-      assignedCHW: "Mukamana Esperance",
-      status: "discharged",
-      lastVisit: "3 days ago",
-      progress: 91,
-      avatar: "/young-woman-smiling.png"
-    },
-    {
-      id: 4,
-      name: "David Uwimana",
-      age: "6 years",
-      condition: "Spastic CP",
-      gmfcsLevel: "IV",
-      assignedCHW: null,
-      status: "active",
-      lastVisit: "5 days ago",
-      progress: 68,
-      avatar: "/placeholder.svg"
     }
   ]
 
@@ -295,49 +414,16 @@ export function PhysiotherapistDashboard() {
     "Hakizimana Faustin"
   ]
 
-  const handleAssignCHW = (patientId: number, chwName: string) => {
-    console.log(`Assigning ${chwName} to patient ${patientId}`)
-    setShowAssignDialog(false)
-    // Here you would update the patient's assigned CHW
-  }
-
   const handleFormSubmit = (formData: any) => {
     console.log("Assessment form submitted:", formData)
     setShowAssessmentForm(false)
+    toast.success("✅ Assessment form submitted successfully!")
     // Here you would save the assessment data
-  }
-
-  const handleApproveAppointment = (appointmentId: number, link: string) => {
-    console.log(`Approving appointment ${appointmentId} with link: ${link}`)
-    setShowAppointmentDialog(false)
-    setMeetingLink("")
-    // Here you would update the appointment status and send link to patient
-  }
-
-  const handleDenyAppointment = (appointmentId: number, reason: string) => {
-    console.log(`Denying appointment ${appointmentId} with reason: ${reason}`)
-    setShowAppointmentDialog(false)
-    setDenialReason("")
-    // Here you would update the appointment status and notify patient
-  }
-
-  const handleSubmitFeedback = (reportId: number, feedbackText: string) => {
-    console.log(`Submitting feedback for report ${reportId}: ${feedbackText}`)
-    setShowFeedbackDialog(false)
-    setFeedback("")
-    // Here you would save the feedback and notify the CHW
-  }
-
-  const markNotificationAsRead = (notificationId: number) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === notificationId ? { ...notif, read: true } : notif
-      )
-    )
   }
 
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(notif => ({ ...notif, read: true })))
+    toast.success("✅ All notifications marked as read")
   }
 
   const unreadCount = notifications.filter(n => !n.read).length
@@ -363,12 +449,20 @@ export function PhysiotherapistDashboard() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-blue-800 bg-clip-text text-transparent">
-                  Dr. Sarah Mitchell
+                  {doctorName}
                 </h1>
                 <p className="text-slate-600 font-medium">Pediatric Physiotherapist • Senior Specialist</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl"
+                onClick={() => setShowSettingsDialog(true)}
+              >
+                <Settings className="w-5 h-5 text-slate-700" />
+              </Button>
               <Popover open={showNotifications} onOpenChange={setShowNotifications}>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl">
@@ -531,7 +625,10 @@ export function PhysiotherapistDashboard() {
           <TabsContent value="overview" className="space-y-8">
             {/* Enhanced Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="group relative">
+              <div 
+                className="group relative cursor-pointer"
+                onClick={() => handleStatCardClick('patients', 1)}
+              >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <Card className="relative bg-white/80 backdrop-blur-xl border-0 shadow-xl rounded-3xl overflow-hidden group-hover:scale-105 transition-all duration-300">
                   <CardContent className="p-6">
@@ -545,14 +642,17 @@ export function PhysiotherapistDashboard() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">24</p>
+                      <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">1</p>
                       <p className="text-slate-600 font-medium">Active Patients</p>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="group relative">
+              <div 
+                className="group relative cursor-pointer"
+                onClick={() => handleStatCardClick('appointments', 2)}
+              >
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <Card className="relative bg-white/80 backdrop-blur-xl border-0 shadow-xl rounded-3xl overflow-hidden group-hover:scale-105 transition-all duration-300">
                   <CardContent className="p-6">
@@ -566,14 +666,17 @@ export function PhysiotherapistDashboard() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">8</p>
+                      <p className="text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">2</p>
                       <p className="text-slate-600 font-medium">Today's Sessions</p>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="group relative">
+              <div 
+                className="group relative cursor-pointer"
+                onClick={() => handleStatCardClick('reports', 3)}
+              >
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <Card className="relative bg-white/80 backdrop-blur-xl border-0 shadow-xl rounded-3xl overflow-hidden group-hover:scale-105 transition-all duration-300">
                   <CardContent className="p-6">
@@ -594,7 +697,10 @@ export function PhysiotherapistDashboard() {
                 </Card>
               </div>
 
-              <div className="group relative">
+              <div 
+                className="group relative cursor-pointer"
+                onClick={() => handleStatCardClick('chw', 12)}
+              >
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <Card className="relative bg-white/80 backdrop-blur-xl border-0 shadow-xl rounded-3xl overflow-hidden group-hover:scale-105 transition-all duration-300">
                   <CardContent className="p-6">
@@ -626,10 +732,7 @@ export function PhysiotherapistDashboard() {
                     </div>
                     <span>Today's Schedule</span>
                   </CardTitle>
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 rounded-2xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Session
-                  </Button>
+
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -682,15 +785,15 @@ export function PhysiotherapistDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm" className="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl"
+                          onClick={() => openMeetingLink("https://meet.google.com/tcq-qjjr-ave", "Uwimana Claudine")}
+                        >
                           <Video className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl">
-                          <Phone className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl">
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
+
                       </div>
                     </div>
                   </div>
@@ -754,19 +857,16 @@ export function PhysiotherapistDashboard() {
                       <p className="text-slate-700 mb-4 leading-relaxed">{report.summary}</p>
                       <div className="flex items-center justify-between">
                         <div className="flex space-x-3">
-                          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300">
+                          <Button 
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300"
+                            onClick={handleViewDetails}
+                          >
                             View Details
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Button>
-                          <Button variant="outline" className="border-slate-200 hover:bg-slate-50 rounded-xl">
-                            <Download className="w-4 h-4 mr-2" />
-                            Export
-                          </Button>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl">
-                            <MessageSquare className="w-4 h-4" />
-                          </Button>
+
                           <Button variant="ghost" size="sm" className="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl">
                             <Video className="w-4 h-4" />
                           </Button>
@@ -792,14 +892,7 @@ export function PhysiotherapistDashboard() {
                       <Plus className="w-4 h-4 mr-2" />
                       New Assessment
                     </Button>
-                    <Button variant="outline" className="border-blue-200 hover:bg-blue-50 rounded-xl">
-                      <Filter className="w-4 h-4 mr-2" />
-                      Filter
-                    </Button>
-                    <Button variant="outline" className="border-purple-200 hover:bg-purple-50 rounded-xl">
-                      <Search className="w-4 h-4 mr-2" />
-                      Search
-                    </Button>
+
                   </div>
                 </div>
               </CardHeader>
@@ -818,15 +911,7 @@ export function PhysiotherapistDashboard() {
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="text-xl font-bold text-slate-800">{patient.name}</h4>
                           <div className="flex items-center space-x-2">
-                            <div className="text-right">
-                              <div className={`text-lg font-bold ${
-                                patient.progress >= 80 ? 'text-emerald-600' :
-                                patient.progress >= 60 ? 'text-amber-600' : 'text-red-600'
-                              }`}>
-                                {patient.progress}%
-                              </div>
-                              <div className="text-xs text-slate-500">Progress</div>
-                            </div>
+
                             <Badge 
                               className={`${
                                 patient.status === 'active' ? 'bg-gradient-to-r from-emerald-500 to-teal-600' :
@@ -875,7 +960,10 @@ export function PhysiotherapistDashboard() {
                           variant="ghost" 
                           size="sm" 
                           className="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl"
-                          onClick={() => setShowAssessmentForm(true)}
+                          onClick={() => {
+                            setShowAssessmentForm(true)
+                            toast.info(`📋 Opening assessment form for ${patient.name}`)
+                          }}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -883,10 +971,7 @@ export function PhysiotherapistDashboard() {
                           variant="ghost" 
                           size="sm" 
                           className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl"
-                          onClick={() => {
-                            setSelectedPatient(patient)
-                            setShowAssignDialog(true)
-                          }}
+                          onClick={() => handleAssignPatient(patient)}
                         >
                           <UserPlus className="w-4 h-4" />
                         </Button>
@@ -980,14 +1065,18 @@ export function PhysiotherapistDashboard() {
                         </div>
                         
                         {appointment.status === 'confirmed' && appointment.meetingLink && (
-                          <div className="flex items-center space-x-2 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200">
+                          <div 
+                            className="flex items-center space-x-2 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 cursor-pointer hover:from-emerald-100 hover:to-teal-100 transition-all duration-200"
+                            onClick={() => openMeetingLink(appointment.meetingLink, appointment.patient)}
+                          >
                             <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
                               <Video className="w-4 h-4 text-white" />
                             </div>
                             <div className="flex-1">
-                              <div className="text-sm font-semibold text-emerald-800">Meeting Link Sent</div>
+                              <div className="text-sm font-semibold text-emerald-800">Click to Join Meeting</div>
                               <div className="text-xs text-emerald-600 truncate">{appointment.meetingLink}</div>
                             </div>
+                            <ExternalLink className="w-4 h-4 text-emerald-600" />
                           </div>
                         )}
 
@@ -1009,28 +1098,12 @@ export function PhysiotherapistDashboard() {
                             variant="ghost" 
                             size="sm" 
                             className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl"
-                            onClick={() => {
-                              setSelectedAppointment(appointment)
-                              setShowAppointmentDialog(true)
-                            }}
+                            onClick={() => handleApproveAppointment(appointment)}
                           >
                             <CheckCircle className="w-4 h-4" />
                           </Button>
                         )}
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl"
-                        >
-                          <Phone className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl"
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                        </Button>
+
                       </div>
                     </div>
                   </div>
@@ -1138,22 +1211,18 @@ export function PhysiotherapistDashboard() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex space-x-3">
-                          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300">
+                          <Button 
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300"
+                            onClick={() => handleViewReport(report)}
+                          >
                             View Full Report
                             <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                          <Button variant="outline" className="border-slate-200 hover:bg-slate-50 rounded-xl">
-                            <Download className="w-4 h-4 mr-2" />
-                            Export
                           </Button>
                         </div>
                         <div className="flex items-center space-x-2">
                           {!report.feedbackGiven && (
                             <Button 
-                              onClick={() => {
-                                setSelectedReport(report)
-                                setShowFeedbackDialog(true)
-                              }}
+                              onClick={() => handleReviewReport(report)}
                               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300"
                             >
                               <MessageSquare className="w-4 h-4 mr-2" />
@@ -1220,7 +1289,7 @@ export function PhysiotherapistDashboard() {
             
             <div className="space-y-2">
               <Label htmlFor="chw-select">Select Community Health Worker</Label>
-              <Select onValueChange={(value) => selectedPatient && handleAssignCHW(selectedPatient.id, value)}>
+              <Select onValueChange={(value) => assignToCHW(value)}>
                 <SelectTrigger className="rounded-xl border-slate-200">
                   <SelectValue placeholder="Choose a CHW to assign" />
                 </SelectTrigger>
@@ -1248,7 +1317,12 @@ export function PhysiotherapistDashboard() {
                 Cancel
               </Button>
               <Button 
-                onClick={() => setShowAssignDialog(false)}
+                onClick={() => {
+                  if (selectedPatient) {
+                    toast.success(`✅ CHW assignment completed for ${selectedPatient.name}`)
+                    setShowAssignDialog(false)
+                  }
+                }}
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300"
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
@@ -1309,7 +1383,7 @@ export function PhysiotherapistDashboard() {
                   />
                 </div>
                 <Button 
-                  onClick={() => selectedAppointment && handleApproveAppointment(selectedAppointment.id, meetingLink)}
+                  onClick={confirmAppointment}
                   disabled={!meetingLink.trim()}
                   className="w-full mt-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300"
                 >
@@ -1335,7 +1409,7 @@ export function PhysiotherapistDashboard() {
                   />
                 </div>
                 <Button 
-                  onClick={() => selectedAppointment && handleDenyAppointment(selectedAppointment.id, denialReason)}
+                  onClick={denyAppointment}
                   disabled={!denialReason.trim()}
                   className="w-full mt-3 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white border-0 rounded-xl shadow-lg shadow-red-500/25 hover:shadow-red-500/40 transition-all duration-300"
                 >
@@ -1486,12 +1560,192 @@ export function PhysiotherapistDashboard() {
                 Cancel
               </Button>
               <Button 
-                onClick={() => selectedReport && handleSubmitFeedback(selectedReport.id, feedback)}
+                onClick={submitFeedback}
                 disabled={!feedback.trim()}
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300"
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Send Feedback
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Detailed View Dialog */}
+      <Dialog open={showDetailedView} onOpenChange={setShowDetailedView}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-slate-800">Patient Analytics Dashboard</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-0">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">85%</div>
+                    <div className="text-sm text-slate-600">Overall Progress</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-0">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-emerald-600">12</div>
+                    <div className="text-sm text-slate-600">Sessions Completed</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-0">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-amber-600">3</div>
+                    <div className="text-sm text-slate-600">Goals Achieved</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-800">Recent Activities</h3>
+              <div className="space-y-3">
+                <div className="p-4 bg-white rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-slate-800">Motor Skills Assessment</div>
+                      <div className="text-sm text-slate-600">Completed on Jan 15, 2025</div>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-700">Improved</Badge>
+                  </div>
+                </div>
+                <div className="p-4 bg-white rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-slate-800">Physical Therapy Session</div>
+                      <div className="text-sm text-slate-600">Completed on Jan 12, 2025</div>
+                    </div>
+                    <Badge className="bg-blue-100 text-blue-700">On Track</Badge>
+                  </div>
+                </div>
+                <div className="p-4 bg-white rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-slate-800">CHW Home Visit</div>
+                      <div className="text-sm text-slate-600">Completed on Jan 10, 2025</div>
+                    </div>
+                    <Badge className="bg-purple-100 text-purple-700">Excellent</Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report View Dialog */}
+      <Dialog open={showReportView} onOpenChange={setShowReportView}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-slate-800">
+              CHW Report Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedReportForView && (
+            <div className="space-y-6 pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-slate-600">Patient</Label>
+                  <div className="text-lg font-semibold text-slate-800">{selectedReportForView.patient}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-slate-600">CHW</Label>
+                  <div className="text-lg font-semibold text-slate-800">{selectedReportForView.chw}</div>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-600">Report Summary</Label>
+                <div className="mt-2 p-4 bg-slate-50 rounded-xl">
+                  <p className="text-slate-800">{selectedReportForView.summary}</p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-600">Detailed Observations</Label>
+                <div className="mt-2 p-4 bg-slate-50 rounded-xl">
+                  <p className="text-slate-800">{selectedReportForView.details}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-slate-600">Status</Label>
+                  <Badge className={`mt-2 ${
+                    selectedReportForView.status === 'improvement' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {selectedReportForView.status === 'improvement' ? 'Improvement' : 'Needs Attention'}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-slate-600">Date</Label>
+                  <div className="text-slate-800 mt-2">{selectedReportForView.date}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-slate-800">Profile Settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 pt-4">
+            <div className="text-center">
+              <Avatar className="w-20 h-20 mx-auto mb-4">
+                <AvatarImage src={doctorAvatar || "/placeholder.svg"} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl font-semibold">
+                  {doctorName.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    const reader = new FileReader()
+                    reader.onload = (e) => {
+                      const result = e.target?.result as string
+                      setDoctorAvatar(result)
+                    }
+                    reader.readAsDataURL(file)
+                  }
+                }}
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="doctor-name">Full Name</Label>
+              <Input
+                id="doctor-name"
+                value={doctorName}
+                onChange={(e) => setDoctorName(e.target.value)}
+                className="mt-2"
+                placeholder="Enter your full name"
+              />
+            </div>
+            <div className="flex space-x-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSettingsDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => handleUpdateProfile(doctorName, doctorAvatar)}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              >
+                Save Changes
               </Button>
             </div>
           </div>

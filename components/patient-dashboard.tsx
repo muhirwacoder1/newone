@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { Calendar, Play, Camera, MessageSquare, Clock, CheckCircle, Star, Plus, Bell, Settings, Heart, Activity, Video, Users, BookOpen, Award, TrendingUp, Pill, Zap, ArrowRight, Target, Sparkles, Eye, Brain, MapPin, HelpCircle, Send, ThumbsUp, AlertTriangle, Shield } from 'lucide-react'
 import { BottomNavigation } from "@/components/bottom-navigation"
 import EarlyDetectionCP from "@/components/early-detection"
+import ChildPositioningGuide from "@/components/child-positioning-guide"
 
 export function PatientDashboard() {
   const [activeTab, setActiveTab] = useState("home")
@@ -28,6 +29,8 @@ export function PatientDashboard() {
     notes: ""
   })
   const [showQuestionDialog, setShowQuestionDialog] = useState(false)
+  const [showExerciseDetails, setShowExerciseDetails] = useState(false)
+  const [selectedExercise, setSelectedExercise] = useState<any>(null)
   const [newQuestion, setNewQuestion] = useState({
     title: "",
     content: "",
@@ -148,14 +151,22 @@ export function PatientDashboard() {
     }
   ])
 
-  const todayExercises = [
+  const [todayExercises, setTodayExercises] = useState([
     {
       id: 1,
       name: "Arm Stretching",
       duration: "10 min",
       completed: true,
       difficulty: "Easy",
-      points: 50
+      points: 50,
+      videoUrl: "https://youtu.be/ji72maOhE6s?si=omPJYkV0C8glOA5T",
+      description: "Gentle arm stretching exercises to improve flexibility and reduce muscle tension. Focus on slow, controlled movements and hold each stretch for 15-30 seconds.",
+      instructions: [
+        "Start with gentle warm-up movements",
+        "Stretch each arm slowly and hold for 15-30 seconds",
+        "Breathe deeply during each stretch",
+        "Stop if you feel any pain"
+      ]
     },
     {
       id: 2,
@@ -163,7 +174,15 @@ export function PatientDashboard() {
       duration: "15 min",
       completed: false,
       difficulty: "Medium",
-      points: 75
+      points: 75,
+      videoUrl: "https://youtu.be/hbrKHbM8dnM?si=BVb7bKV0_3pF5FB3",
+      description: "Balance training exercises to improve stability and coordination. These exercises help strengthen core muscles and improve postural control.",
+      instructions: [
+        "Start with simple standing balance exercises",
+        "Progress to more challenging movements as you improve",
+        "Use support if needed for safety",
+        "Practice daily for best results"
+      ]
     },
     {
       id: 3,
@@ -171,9 +190,17 @@ export function PatientDashboard() {
       duration: "12 min",
       completed: false,
       difficulty: "Medium",
-      points: 65
+      points: 65,
+      videoUrl: "https://youtu.be/vNHrQZEwL_U?si=u7vX0L0je6eoO4-_",
+      description: "Leg strengthening exercises to build muscle strength and improve mobility. These exercises target major leg muscle groups including quadriceps, hamstrings, and calves.",
+      instructions: [
+        "Start with light resistance or body weight",
+        "Perform 10-15 repetitions of each exercise",
+        "Rest between sets as needed",
+        "Gradually increase intensity over time"
+      ]
     }
-  ]
+  ])
 
   const upcomingAppointments = [
     {
@@ -349,6 +376,19 @@ export function PatientDashboard() {
     ))
   }
 
+  const handleCompleteExercise = (exerciseId: number) => {
+    setTodayExercises(prev => prev.map(exercise =>
+      exercise.id === exerciseId 
+        ? { ...exercise, completed: true }
+        : exercise
+    ))
+  }
+
+  const handleShowExerciseDetails = (exercise: any) => {
+    setSelectedExercise(exercise)
+    setShowExerciseDetails(true)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 pb-20 relative overflow-hidden">
       {/* Animated Background */}
@@ -399,10 +439,10 @@ export function PatientDashboard() {
               Home
             </TabsTrigger>
             <TabsTrigger
-              value="exercises"
+              value="guide"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl font-semibold transition-all duration-300"
             >
-              Exercises
+              Guide
             </TabsTrigger>
             <TabsTrigger
               value="appointments"
@@ -632,18 +672,32 @@ export function PatientDashboard() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl"
-                          disabled={exercise.completed}
+                          className="bg-red-50 hover:bg-red-100 text-red-600 rounded-xl"
+                          onClick={() => window.open(exercise.videoUrl, '_blank')}
+                          title="Watch Exercise Video"
                         >
                           <Video className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl"
+                          className="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl"
+                          onClick={() => handleShowExerciseDetails(exercise)}
+                          title="View Exercise Details"
                         >
                           <ArrowRight className="w-4 h-4" />
                         </Button>
+                        {!exercise.completed && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl"
+                            onClick={() => handleCompleteExercise(exercise.id)}
+                            title="Mark as Complete"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -699,21 +753,10 @@ export function PatientDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="exercises" className="space-y-6">
-            <Card className="bg-white/80 backdrop-blur-xl border-0 shadow-xl rounded-3xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
-                <CardTitle className="text-2xl font-bold text-slate-800">Exercise Library</CardTitle>
-              </CardHeader>
-              <CardContent className="p-12">
-                <div className="text-center text-slate-500">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <Play className="w-12 h-12 text-slate-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-700 mb-2">Interactive Exercise Library</h3>
-                  <p className="text-slate-500 max-w-md mx-auto">Personalized video exercises with AR guidance and progress tracking would be implemented here.</p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="guide" className="space-y-6">
+            <div className="bg-white/80 backdrop-blur-xl border-0 shadow-xl rounded-3xl overflow-hidden">
+              <ChildPositioningGuide />
+            </div>
           </TabsContent>
 
           <TabsContent value="appointments" className="space-y-6">
@@ -1467,6 +1510,128 @@ export function PatientDashboard() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* Exercise Details Dialog */}
+      <Dialog open={showExerciseDetails} onOpenChange={setShowExerciseDetails}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-slate-800 flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                <Activity className="w-4 h-4 text-white" />
+              </div>
+              <span>{selectedExercise?.name} Details</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedExercise && (
+            <div className="space-y-6 pt-4">
+              {/* Exercise Overview */}
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
+                      selectedExercise.completed
+                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/25'
+                        : 'bg-gradient-to-br from-blue-500 to-purple-600 shadow-blue-500/25'
+                    }`}>
+                      {selectedExercise.completed ? (
+                        <CheckCircle className="w-6 h-6 text-white" />
+                      ) : (
+                        <Play className="w-6 h-6 text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-800">{selectedExercise.name}</h3>
+                      <div className="flex items-center space-x-4 text-sm text-slate-600">
+                        <div className="flex items-center space-x-1">
+                          <Clock className="w-4 h-4 text-blue-600" />
+                          <span>{selectedExercise.duration}</span>
+                        </div>
+                        <Badge
+                          className={`${
+                            selectedExercise.difficulty === 'Easy' ? 'bg-gradient-to-r from-emerald-500 to-teal-600' :
+                            selectedExercise.difficulty === 'Medium' ? 'bg-gradient-to-r from-amber-500 to-orange-600' :
+                            'bg-gradient-to-r from-red-500 to-pink-600'
+                          } text-white border-0 text-xs`}
+                        >
+                          {selectedExercise.difficulty}
+                        </Badge>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 text-amber-500" />
+                          <span className="font-semibold">+{selectedExercise.points} points</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {selectedExercise.completed && (
+                    <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0">
+                      Completed
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-3">
+                <h4 className="text-lg font-semibold text-slate-800 flex items-center">
+                  <Target className="w-5 h-5 mr-2 text-blue-600" />
+                  Description
+                </h4>
+                <p className="text-slate-700 leading-relaxed">{selectedExercise.description}</p>
+              </div>
+
+              {/* Instructions */}
+              <div className="space-y-3">
+                <h4 className="text-lg font-semibold text-slate-800 flex items-center">
+                  <BookOpen className="w-5 h-5 mr-2 text-purple-600" />
+                  Instructions
+                </h4>
+                <div className="space-y-2">
+                  {selectedExercise.instructions.map((instruction: string, index: number) => (
+                    <div key={index} className="flex items-start space-x-3 p-3 bg-slate-50 rounded-xl">
+                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white text-sm font-bold mt-0.5">
+                        {index + 1}
+                      </div>
+                      <p className="text-slate-700 flex-1">{instruction}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-6 border-t border-slate-200">
+                <div className="flex items-center space-x-3">
+                  <Button
+                    onClick={() => window.open(selectedExercise.videoUrl, '_blank')}
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-xl shadow-lg hover:shadow-red-500/25 transition-all duration-300"
+                  >
+                    <Video className="w-4 h-4 mr-2" />
+                    Watch Video Guide
+                  </Button>
+                  {!selectedExercise.completed && (
+                    <Button
+                      onClick={() => {
+                        handleCompleteExercise(selectedExercise.id)
+                        setShowExerciseDetails(false)
+                      }}
+                      className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white border-0 rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-300"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Mark as Complete
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowExerciseDetails(false)}
+                  className="border-slate-200 hover:bg-slate-50 rounded-xl"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div >
