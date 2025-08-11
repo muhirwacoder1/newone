@@ -1,30 +1,58 @@
-# Web design for cerebral palsy
+Web Design for Cerebral Palsy
+A web application focused on accessible design principles for users with cerebral palsy, ensuring inclusive and user-friendly digital experiences.
+🌟 Features
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+Accessible design optimized for users with cerebral palsy
+Responsive layout that works across all devices
+High contrast and customizable visual elements
+Keyboard navigation support
+Screen reader compatibility
+Simplified user interface with clear navigation
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/icode122333s-projects/v0-web-design-for-cerebral-palsy)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/UNJOCL3FrJh)
+🚀 Live Demo
+Visit the live application: http://risebeyondapp.vercel.app
+🛠️ Technologies Used
 
-## Overview
+HTML5
+CSS3
+typescript
+Responsive Design Principles
+Web Accessibility Standards (WCAG)
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+📦 Installation
 
-## Deployment
+Clone the repository:
+bashgit clone https://github.com/your-username/web-design-for-cerebral-palsy.git
 
-Your project is live at:
+Navigate to the project directory:
+bashcd web-design-for-cerebral-palsy
 
-**[https://vercel.com/icode122333s-projects/v0-web-design-for-cerebral-palsy](https://vercel.com/icode122333s-projects/v0-web-design-for-cerebral-palsy)**
+Open index.html in your browser or serve it using a local server.
 
-## Build your app
+🎯 Accessibility Features
 
-Continue building your app on:
+High Contrast Mode: Enhanced visual contrast for better readability
+Large Click Targets: Bigger buttons and interactive elements
+Keyboard Navigation: Full functionality without mouse input
+Screen Reader Support: Semantic HTML and ARIA labels
+Reduced Motion: Respects user preferences for reduced animations
+Clear Typography: Easy-to-read fonts and appropriate sizing
 
-**[https://v0.dev/chat/projects/UNJOCL3FrJh](https://v0.dev/chat/projects/UNJOCL3FrJh)**
+🤝 Contributing
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-## How It Works
+Fork the project
+Create your feature branch (git checkout -b feature/AmazingFeature)
+Commit your changes (git commit -m 'Add some AmazingFeature')
+Push to the branch (git push origin feature/AmazingFeature)
+Open a Pull Request
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+👨‍💻 Author
+
+
+📞 Support
+If you have any questions or need help with accessibility features, please open an issue in the GitHub repository.
+
+Note: This project prioritizes accessibility and inclusive design to ensure all users, particularly those with cerebral palsy, can navigate and interact with web content effectively.
